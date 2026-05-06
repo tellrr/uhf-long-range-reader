@@ -1,0 +1,24 @@
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\bin\x64\Release\UHFReader188demomain.exe.config
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\bin\x64\Release\UHFReader188demomain.exe
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\bin\x64\Release\UHFReader188demomain.pdb
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\bin\x64\Release\Microsoft.Office.Interop.Excel.dll
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\bin\x64\Release\office.dll
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\bin\x64\Release\Microsoft.Vbe.Interop.dll
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\bin\x64\Release\stdole.dll
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.csprojResolveAssemblyReference.cache
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.Form1.resources
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.Properties.Resources.resources
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.SearchNotityForm.resources
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.updateForm.resources
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.csproj.GenerateResource.Cache
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.exe
+E:\演示软件\UHF\RRU1801\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.pdb
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.csproj.AssemblyReference.cache
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.Form1.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.Properties.Resources.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.SearchNotityForm.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.updateForm.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.csproj.GenerateResource.cache
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.csproj.CoreCompileInputs.cache
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.exe
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x64\Release\UHFReader188demomain.pdb

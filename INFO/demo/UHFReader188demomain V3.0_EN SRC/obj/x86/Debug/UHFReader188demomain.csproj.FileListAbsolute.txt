@@ -1,0 +1,7 @@
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x86\Debug\UHFReader188demomain.csproj.AssemblyReference.cache
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x86\Debug\UHFReader188demomain.Form1.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x86\Debug\UHFReader188demomain.Properties.Resources.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x86\Debug\UHFReader188demomain.SearchNotityForm.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x86\Debug\UHFReader188demomain.updateForm.resources
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x86\Debug\UHFReader188demomain.csproj.GenerateResource.cache
+E:\0000 其他公司文件\荣睿\荣睿M100系列一体机功放R213\演示软件\UHFReader188demomain V3.0\obj\x86\Debug\UHFReader188demomain.csproj.CoreCompileInputs.cache
