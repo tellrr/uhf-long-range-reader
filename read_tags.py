@@ -16,11 +16,14 @@ except ImportError as exc:  # pragma: no cover - runtime environment dependent
 CMD_INVENTORY_G2 = 0x01
 CMD_GET_READER_INFORMATION = 0x21
 CMD_WRITE_SCAN_TIME = 0x25
+CMD_SET_POWER = 0x2F
+
+MAX_POWER_DBM = 30
 
 AUTO = "auto"
 SUPPORTED_BAUD_RATES = [9600, 19200, 38400, 57600, 115200]
 BAUD_PROBE_ORDER = [57600, 115200, 38400, 19200, 9600]
-AUTO_ADDRESS_PROBES = [0x00, 0xFF]
+READER_ADDRESS = 0xFF  # broadcast — all commands use this; any single reader responds
 
 PRESET_VALUE = 0xFFFF
 POLYNOMIAL = 0x8408
@@ -64,13 +67,6 @@ class ReaderResponse:
     raw: bytes
 
 
-@dataclass
-class ReaderConnection:
-    port_name: str
-    baud: int
-    address: int
-    probe_address: int
-
 
 @dataclass
 class TagRecord:
@@ -110,23 +106,6 @@ def parse_baud(value: str) -> int | str:
     return baud
 
 
-def parse_address(value: str) -> int | str:
-    if value.lower() == AUTO:
-        return AUTO
-
-    try:
-        address = parse_number(value)
-    except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            "address must be in the range 0x00..0xFF or 'auto'"
-        ) from exc
-
-    if not 0x00 <= address <= 0xFF:
-        raise argparse.ArgumentTypeError(
-            "address must be in the range 0x00..0xFF or 'auto'"
-        )
-    return address
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -138,12 +117,6 @@ def parse_args() -> argparse.Namespace:
         type=parse_baud,
         default=AUTO,
         help="Reader baud rate or 'auto', default: auto",
-    )
-    parser.add_argument(
-        "--address",
-        type=parse_address,
-        default=AUTO,
-        help="Reader address or 'auto', default: auto",
     )
     parser.add_argument(
         "--q",
@@ -400,18 +373,6 @@ def retry_reader_operation(
     raise last_error
 
 
-def _baud_candidates(baud: int | str) -> list[int]:
-    if baud == AUTO:
-        return BAUD_PROBE_ORDER
-    return [int(baud)]
-
-
-def _address_candidates(address: int | str) -> list[int]:
-    if address == AUTO:
-        return AUTO_ADDRESS_PROBES
-    return [int(address)]
-
-
 def _probe_reader_information(
     port_name: str,
     baud: int,
@@ -462,55 +423,42 @@ def _probe_reader_information(
         return response
 
 
-def detect_reader_connection(
+def _detect_baud(
     port_name: str,
     *,
     baud: int | str,
-    address: int | str,
     timeout: float,
     debug: bool,
     serial_factory: Callable[..., Serial] = serial.Serial,
     probe_rounds: int = 1,
-) -> ReaderConnection:
+) -> int:
+    if baud != AUTO:
+        return int(baud)
+
     last_error: Exception | None = None
 
     for _ in range(max(probe_rounds, 1)):
-        for baud_candidate in _baud_candidates(baud):
-            for address_candidate in _address_candidates(address):
-                try:
-                    response = _probe_reader_information(
-                        port_name,
-                        baud_candidate,
-                        address_candidate,
-                        timeout,
-                        debug,
-                        serial_factory,
-                    )
-                    return ReaderConnection(
-                        port_name=port_name,
-                        baud=baud_candidate,
-                        address=response.address,
-                        probe_address=address_candidate,
-                    )
-                except (TimeoutError, ProtocolError, serial.SerialException) as exc:
-                    last_error = exc
-                    if debug:
-                        print(
-                            f"DROP probe baud={baud_candidate} "
-                            f"address=0x{address_candidate:02X}: {exc}",
-                            file=sys.stderr,
-                        )
+        for baud_candidate in BAUD_PROBE_ORDER:
+            try:
+                _probe_reader_information(
+                    port_name, baud_candidate, READER_ADDRESS, timeout, debug, serial_factory
+                )
+                return baud_candidate
+            except (TimeoutError, ProtocolError, serial.SerialException) as exc:
+                last_error = exc
+                if debug:
+                    print(f"DROP probe baud={baud_candidate}: {exc}", file=sys.stderr)
 
     if last_error is not None:
         raise last_error
-    raise ProtocolError("No reader probe attempts were made.")
+    raise ProtocolError("No baud probe attempts were made.")
 
 
 class UHFReader188Serial:
     def __init__(
-        self, port_name: str, baud: int, address: int, timeout: float, debug: bool = False
+        self, port_name: str, baud: int, timeout: float, debug: bool = False
     ) -> None:
-        self.address = address & 0xFF
+        self.address = READER_ADDRESS
         self.debug = debug
         self.port = serial.Serial(
             port=port_name,
@@ -550,6 +498,11 @@ class UHFReader188Serial:
         if not 3 <= scan_time <= 255:
             raise ValueError("scan_time must be in the range 3..255")
         return self.transact(CMD_WRITE_SCAN_TIME, bytes([scan_time]))
+
+    def set_power(self, power_dbm: int) -> ReaderResponse:
+        if not 0 <= power_dbm <= MAX_POWER_DBM:
+            raise ValueError(f"power_dbm must be in the range 0..{MAX_POWER_DBM}")
+        return self.transact(CMD_SET_POWER, bytes([power_dbm]))
 
     def inventory_once(
         self, q_value: int, session: int, epc_length_unit: str
@@ -623,39 +576,27 @@ def get_scan_time_units(response: ReaderResponse) -> int | None:
     return None
 
 
+def get_current_power(response: ReaderResponse) -> int | None:
+    if response.status == 0x00 and len(response.data) >= 7:
+        return response.data[6]
+    return None
+
+
 def main() -> int:
     args = parse_args()
     startup_retry_delay_s = max(args.startup_retry_delay_ms, 0) / 1000.0
 
-    if args.baud == AUTO or args.address == AUTO:
-        connection = detect_reader_connection(
-            args.port,
-            baud=args.baud,
-            address=args.address,
-            timeout=args.timeout,
-            debug=args.debug,
-            probe_rounds=min(max(args.startup_retries, 0) + 1, 3),
-        )
-        print(
-            f"Detected reader: port={connection.port_name} baud={connection.baud} "
-            f"address=0x{connection.address:02X} "
-            f"(probe address=0x{connection.probe_address:02X})"
-        )
-    else:
-        connection = ReaderConnection(
-            port_name=args.port,
-            baud=args.baud,
-            address=args.address,
-            probe_address=args.address,
-        )
-
-    reader = UHFReader188Serial(
-        connection.port_name,
-        connection.baud,
-        connection.address,
-        args.timeout,
-        args.debug,
+    baud = _detect_baud(
+        args.port,
+        baud=args.baud,
+        timeout=args.timeout,
+        debug=args.debug,
+        probe_rounds=min(max(args.startup_retries, 0) + 1, 3),
     )
+    if args.baud == AUTO:
+        print(f"Detected reader: port={args.port} baud={baud} address=0x{READER_ADDRESS:02X} (broadcast)")
+
+    reader = UHFReader188Serial(args.port, baud, args.timeout, args.debug)
 
     try:
         info = retry_reader_operation(
@@ -667,6 +608,23 @@ def main() -> int:
         )
         print_reader_information(info)
         scan_time_units = get_scan_time_units(info)
+
+        current_power = get_current_power(info)
+        if current_power is None or current_power != MAX_POWER_DBM:
+            response = retry_reader_operation(
+                "SetPower",
+                lambda: reader.set_power(MAX_POWER_DBM),
+                retries=max(args.startup_retries, 0),
+                delay_s=startup_retry_delay_s,
+                debug=args.debug,
+            )
+            if response.status != 0x00:
+                raise ProtocolError(
+                    f"SetPower failed with 0x{response.status:02X} ({status_text(response.status)})"
+                )
+            print(f"Power set to {MAX_POWER_DBM} dBm (was {current_power} dBm)")
+        else:
+            print(f"Power already at {MAX_POWER_DBM} dBm")
 
         if args.scan_time is not None:
             response = retry_reader_operation(

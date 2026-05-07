@@ -65,15 +65,7 @@ class ReaderAutoDetectionTests(unittest.TestCase):
         with self.assertRaises(argparse.ArgumentTypeError):
             read_tags.parse_baud("12345")
 
-    def test_parse_address_accepts_auto_or_number(self):
-        self.assertEqual(read_tags.parse_address("auto"), "auto")
-        self.assertEqual(read_tags.parse_address("0x01"), 0x01)
-        self.assertEqual(read_tags.parse_address("FF"), 0xFF)
-
-        with self.assertRaises(argparse.ArgumentTypeError):
-            read_tags.parse_address("0x100")
-
-    def test_auto_detect_uses_broadcast_probe_response_address(self):
+    def test_auto_detect_baud_uses_broadcast_and_returns_baud(self):
         response = bytes.fromhex(
             "0F 01 21 00 05 01 89 02 4E 00 1A 3C 00 00 54 E4"
         )
@@ -86,33 +78,21 @@ class ReaderAutoDetectionTests(unittest.TestCase):
             }
         )
 
-        detected = read_tags.detect_reader_connection(
+        detected_baud = read_tags._detect_baud(
             "COM1",
             baud="auto",
-            address="auto",
             timeout=0.1,
             debug=False,
             serial_factory=factory,
         )
 
-        self.assertEqual(detected.port_name, "COM1")
-        self.assertEqual(detected.baud, 57600)
-        self.assertEqual(detected.address, 0x01)
-        self.assertEqual(detected.probe_address, 0xFF)
+        self.assertEqual(detected_baud, 57600)
         self.assertEqual(
-            factory.writes[:2],
+            factory.writes,
             [
                 (
                     57600,
-                    read_tags.build_command(
-                        0x00, read_tags.CMD_GET_READER_INFORMATION
-                    ),
-                ),
-                (
-                    57600,
-                    read_tags.build_command(
-                        0xFF, read_tags.CMD_GET_READER_INFORMATION
-                    ),
+                    read_tags.build_command(0xFF, read_tags.CMD_GET_READER_INFORMATION),
                 ),
             ],
         )
